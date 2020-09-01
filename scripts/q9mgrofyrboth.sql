@@ -2,32 +2,37 @@
 in both the National League (NL) and the American League (AL)? 
 Give their full name and the teams that they were managing when they won the award.*/
 
-SELECT 	CONCAT(namefirst, ' ', namelast) AS fullname, 
-		a.yearid, 
-		a.lgid, 
-		franchname
+SELECT distinct CONCAT(p.namefirst, ' ', p.namelast) AS fullname, a.yearid, a.awardid, a.lgid, t.name AS team
 FROM awardsmanagers as a
-LEFT JOIN people as p
-	ON a.playerid = p.playerid
-LEFT JOIN managers as m
-	ON a.playerid = m.playerid
-	AND a.yearid = m.yearid
-LEFT JOIN teams as t
-	ON m.teamid = t.teamid
-LEFT JOIN teamsfranchises as tf
-	ON t.franchid = tf.franchid
+RIGHT JOIN
+(SELECT playerid
+FROM awardsmanagers
 WHERE awardid ILIKE '%tsn%'
-	AND a.yearid >= 1986
-	AND franchname NOT ILIKE '%senators%'
-GROUP BY CONCAT(namefirst, ' ', namelast), a.yearid, a.lgid, franchname
-ORDER BY yearid;
-
---only returning AL
-SELECT a.playerid, a.yearid, a.lgid
+AND lgid = 'NL') as a2
+ON a.playerid = a2.playerid
+LEFT JOIN people AS p
+ON a.playerid = p.playerid
+LEFT JOIN managers AS m
+ON a.playerid = m.playerid AND a.yearid = m.yearid
+LEFT JOIN teams AS t
+ON m.teamid = t.teamid AND a.yearid = t.yearid
+WHERE awardid ILIKE '%tsn%'
+AND a.lgid = 'AL'
+UNION ALL
+SELECT distinct CONCAT(p.namefirst, ' ', p.namelast) AS fullname, a.yearid, a.awardid, a.lgid, t.name AS team
 FROM awardsmanagers as a
-LEFT JOIN (SELECT awardsmanagers.playerid FROM awardsmanagers
-WHERE lgid = 'NL') AS subquery
-ON a.playerid = subquery.playerid
+RIGHT JOIN
+(SELECT playerid
+FROM awardsmanagers
 WHERE awardid ILIKE '%tsn%'
-AND lgid = 'AL'
-GROUP BY a.playerid, a.yearid, a.lgid
+AND lgid = 'AL') as a2
+ON a.playerid = a2.playerid
+LEFT JOIN people AS p
+ON a.playerid = p.playerid
+LEFT JOIN managers AS m
+ON a.playerid = m.playerid AND a.yearid = m.yearid
+LEFT JOIN teams AS t
+ON m.teamid = t.teamid AND a.yearid = t.yearid
+WHERE awardid ILIKE '%tsn%'
+AND a.lgid = 'NL'
+ORDER BY fullname, yearid;

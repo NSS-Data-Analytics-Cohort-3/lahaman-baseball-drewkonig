@@ -48,57 +48,18 @@ LIMIT 1;
 also won the world series? 
 What percentage of the time?*/
 
-SELECT COUNT(wswin)
-FROM
-(SELECT 	yearid, 
-		franchname, 
-		w,
-		wswin
-FROM teams as t
-LEFT JOIN teamsfranchises as tf
-ON t.franchid = tf.franchid
-WHERE yearid BETWEEN 1970 AND 2016
-AND (w, yearid) IN (SELECT MAX(w), 
-					yearid
-					FROM teams
-					WHERE yearid BETWEEN 1970 AND 2016
-					GROUP BY yearid)
-GROUP BY franchname, yearid, wswin, w
-ORDER BY yearid) AS subquery
-WHERE wswin = 'Y';
-
-SELECT (SELECT CAST(COUNT(wswin) AS decimal)
-	   FROM (SELECT 	yearid, 
-		franchname, 
-		w,
-		wswin
-FROM teams as t
-LEFT JOIN teamsfranchises as tf
-ON t.franchid = tf.franchid
-WHERE yearid BETWEEN 1970 AND 2016
-AND (w, yearid) IN (SELECT MAX(w), 
-					yearid
-					FROM teams
-					WHERE yearid BETWEEN 1970 AND 2016
-					GROUP BY yearid)
-GROUP BY franchname, yearid, wswin, w
-ORDER BY yearid) AS subquery2)
-	   --WHERE wswin = 'Y')  
-	   /CAST(COUNT(*) AS decimal) AS pctwswin
-FROM
-(SELECT 	yearid, 
-		franchname, 
-		w,
-		wswin
-FROM teams as t
-LEFT JOIN teamsfranchises as tf
-ON t.franchid = tf.franchid
-WHERE yearid BETWEEN 1970 AND 2016
-AND (w, yearid) IN (SELECT MAX(w), 
-					yearid
-					FROM teams
-					WHERE yearid BETWEEN 1970 AND 2016
-					GROUP BY yearid)
-GROUP BY franchname, yearid, wswin, w
-ORDER BY yearid) AS subquery
-WHERE wswin = 'Y';
+SELECT 	wswin,
+		COUNT(wswin) as wswincount,
+		ROUND(COUNT(wswin) * 100.0 / 53,2) as wspercent
+FROM(SELECT t.yearid, t.name, t.w, t.wswin
+	FROM teams AS t
+	INNER JOIN
+    	(SELECT yearid, MAX(w) AS maxwins
+    	FROM teams
+    	GROUP BY yearid) AS groupedteams 
+	ON t.yearid = groupedteams.yearid
+	AND t.w = groupedteams.maxwins
+	WHERE t.yearid >= 1970) AS subquery
+WHERE wswin IS NOT NULL
+GROUP BY wswin
+ORDER BY wswin DESC;
