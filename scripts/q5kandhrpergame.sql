@@ -14,8 +14,8 @@ SELECT CASE WHEN yearid BETWEEN '1920' AND '1929' THEN '1920s'
 			WHEN yearid BETWEEN '2000'AND'2009' THEN '2000s'
 			WHEN yearid BETWEEN '2010'AND'2016' THEN '2010s' 
 			ELSE NULL END AS decade,
-			ROUND(CAST(SUM(so) as decimal)/CAST(SUM(ghome) as decimal),2),
-			ROUND(CAST(SUM(hr) as decimal)/CAST(SUM(ghome) as decimal),2)
+			ROUND(CAST(SUM(so) as decimal)/CAST(SUM(ghome) as decimal),2) AS kpergame,
+			ROUND(CAST(SUM(hr) as decimal)/CAST(SUM(ghome) as decimal),2) AS hrpergame
 FROM teams
 WHERE 	CASE WHEN yearid BETWEEN '1920' AND '2016' THEN 'x'
 		ELSE NULL END IS NOT NULL
